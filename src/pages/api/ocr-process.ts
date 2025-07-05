@@ -48,8 +48,8 @@ async function enhanceOCRWithAI(rawText: string): Promise<string> {
 
     const data = await response.json()
     return data.candidates?.[0]?.content?.parts?.[0]?.text || rawText
-  } catch (error) {
-    console.error('AI enhancement failed:', error)
+  } catch (error: unknown) {
+    console.error("AI enhancement failed:", error)
     return rawText // Fallback to raw text if AI fails
   }
 }
@@ -90,7 +90,7 @@ export default async function handler(
     const processedOCRText = await enhanceOCRWithAI(rawOCRText)
 
     // Save to Supabase
-    const { data: menu, error } = await supabase
+    const { data: menu, error: supabaseError } = await supabase
       .from('menus')
       .insert([
         {
@@ -104,8 +104,8 @@ export default async function handler(
       .select()
       .single()
 
-    if (error) {
-      return res.status(400).json({ error: error.message })
+    if (supabaseError) {
+      return res.status(400).json({ error: supabaseError.message })
     }
 
     // Clean up temporary file
@@ -119,11 +119,11 @@ export default async function handler(
       ocr_processed: processedOCRText,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('OCR processing error:', error)
     return res.status(500).json({
       error: 'Failed to process OCR',
-      details: error.message,
+      details: (error as Error).message,
     })
   }
 }

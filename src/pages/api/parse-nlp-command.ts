@@ -5,7 +5,7 @@ interface ParsedCommand {
   action: string
   item: string
   type: 'wine' | 'cocktail' | 'special'
-  details?: any
+  details?: unknown
 }
 
 async function parseCommandWithAI(command: string): Promise<ParsedCommand> {
@@ -49,14 +49,21 @@ Return only the JSON object, no other text.`
     const data = await response.json()
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
     
+    // Clean up the response    const data = await response.json()
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
     // Clean up the response to extract JSON
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-    const jsonString = jsonMatch ? jsonMatch[0] : '{}'
+    const jsonString    const data = await response.json()
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
+    
+    // Clean up the response to extract JSON
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+    const jsonString = jsonMatch ? jsonMatch[0] : 
     
     return JSON.parse(jsonString)
-  } catch (error) {
-    console.error('AI parsing failed:', error)
-    throw new Error('Failed to parse command')
+  } catch (error: unknown) {
+    console.error("AI parsing failed:", error)
+    throw new Error((error as Error).message || "Failed to parse command")
   }
 }
 
@@ -64,57 +71,57 @@ async function executeCommand(parsedCommand: ParsedCommand) {
   const { action, item, type, details } = parsedCommand
 
   switch (type) {
-    case 'wine':
+    case "wine":
       return await executeWineCommand(action, item, details)
-    case 'cocktail':
+    case "cocktail":
       return await executeCocktailCommand(action, item, details)
-    case 'special':
+    case "special":
       return await executeSpecialCommand(action, item, details)
     default:
       throw new Error(`Unknown item type: ${type}`)
   }
 }
 
-async function executeWineCommand(action: string, item: string, details: any) {
+async function executeWineCommand(action: string, item: string, details: unknown) {
   switch (action) {
-    case '86':
-      const { data: wine, error } = await supabase
-        .from('wines')
+    case "86":
+      const { data: wine, error: supabaseError } = await supabase
+        .from("wines")
         .update({ is_86d: true })
-        .ilike('name', `%${item}%`)
+        .ilike("name", `%${item}%`)
         .select()
 
-      if (error) throw error
+      if (supabaseError) throw supabaseError
 
       // Also add to 86'd items log
       await supabase
-        .from('eighty_sixed_items')
+        .from("eighty_sixed_items")
         .insert([{
           item_name: item,
-          item_type: 'wine',
-          item_id: wine?.[0]?.id
+          item_type: "wine",
+          item_id: (wine?.[0] as { id: string })?.id
         }])
 
       return { success: true, message: `86'd wine: ${item}`, data: wine }
 
-    case 'un86':
+    case "un86":
       const { data: unWine, error: unError } = await supabase
-        .from('wines')
+        .from("wines")
         .update({ is_86d: false })
-        .ilike('name', `%${item}%`)
+        .ilike("name", `%${item}%`)
         .select()
 
       if (unError) throw unError
       return { success: true, message: `Un-86'd wine: ${item}`, data: unWine }
 
-    case 'add':
+    case "add":
       const { data: newWine, error: addError } = await supabase
-        .from('wines')
+        .from("wines")
         .insert([{
           name: item,
-          type: details?.type || 'unknown',
-          price: details?.price,
-          description: details?.description,
+          type: (details as { type?: string })?.type || "unknown",
+          price: (details as { price?: number })?.price,
+          description: (details as { description?: string })?.description,
           is_86d: false
         }])
         .select()
@@ -127,36 +134,36 @@ async function executeWineCommand(action: string, item: string, details: any) {
   }
 }
 
-async function executeCocktailCommand(action: string, item: string, details: any) {
+async function executeCocktailCommand(action: string, item: string, details: unknown) {
   switch (action) {
-    case '86':
-      const { data: cocktail, error } = await supabase
-        .from('cocktails')
+    case "86":
+      const { data: cocktail, error: supabaseError } = await supabase
+        .from("cocktails")
         .update({ is_86d: true })
-        .ilike('name', `%${item}%`)
+        .ilike("name", `%${item}%`)
         .select()
 
-      if (error) throw error
+      if (supabaseError) throw supabaseError
 
       await supabase
-        .from('eighty_sixed_items')
+        .from("eighty_sixed_items")
         .insert([{
           item_name: item,
-          item_type: 'cocktail',
-          item_id: cocktail?.[0]?.id
+          item_type: "cocktail",
+          item_id: (cocktail?.[0] as { id: string })?.id
         }])
 
       return { success: true, message: `86'd cocktail: ${item}`, data: cocktail }
 
-    case 'add':
+    case "add":
       const { data: newCocktail, error: addError } = await supabase
-        .from('cocktails')
+        .from("cocktails")
         .insert([{
           name: item,
-          ingredients: details?.ingredients || 'TBD',
-          price: details?.price,
-          type: details?.type || 'classic',
-          is_signature: details?.type === 'signature',
+          ingredients: (details as { ingredients?: string })?.ingredients || "TBD",
+          price: (details as { price?: number })?.price,
+          type: (details as { type?: string })?.type || "classic",
+          is_signature: (details as { type?: string })?.type === "signature",
           is_86d: false
         }])
         .select()
@@ -169,16 +176,16 @@ async function executeCocktailCommand(action: string, item: string, details: any
   }
 }
 
-async function executeSpecialCommand(action: string, item: string, details: any) {
+async function executeSpecialCommand(action: string, item: string, details: unknown) {
   switch (action) {
-    case 'add':
+    case "add":
       const { data: newSpecial, error: addError } = await supabase
-        .from('specials')
+        .from("specials")
         .insert([{
           name: item,
-          description: details?.description,
-          price: details?.price,
-          type: details?.type || 'daily',
+          description: (details as { description?: string })?.description,
+          price: (details as { price?: number })?.price,
+          type: (details as { type?: string })?.type || "daily",
           is_active: true
         }])
         .select()
@@ -186,11 +193,11 @@ async function executeSpecialCommand(action: string, item: string, details: any)
       if (addError) throw addError
       return { success: true, message: `Added special: ${item}`, data: newSpecial }
 
-    case 'delete':
+    case "delete":
       const { data: deletedSpecial, error: deleteError } = await supabase
-        .from('specials')
+        .from("specials")
         .update({ is_active: false })
-        .ilike('name', `%${item}%`)
+        .ilike("name", `%${item}%`)
         .select()
 
       if (deleteError) throw deleteError
@@ -205,8 +212,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST'])
+  if (req.method !== "POST") {
+    res.setHeader("Allow", ["POST"])
     return res.status(405).end(`Method ${req.method} Not Allowed`)
   }
 
@@ -214,7 +221,7 @@ export default async function handler(
     const { command } = req.body
 
     if (!command) {
-      return res.status(400).json({ error: 'Command is required' })
+      return res.status(400).json({ error: "Command is required" })
     }
 
     // Parse the command using AI
@@ -230,11 +237,24 @@ export default async function handler(
       result: result
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error("NLP command processing error:", error)
+    return res.status(500).json({
+      error: "Failed to process command",
+      details: (error as Error).message,
+    })
+  }
+} (error as Error).message,
+    })
+  }
+}    result: result
+    })
+
+  } catch (error: unknown) {
     console.error('NLP command processing error:', error)
     return res.status(500).json({
       error: 'Failed to process command',
-      details: error.message,
+      details: (error as Error).message,
     })
   }
 }

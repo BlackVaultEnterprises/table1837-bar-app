@@ -10,18 +10,18 @@ export default async function handler(
   switch (method) {
     case 'GET':
       try {
-        const { data: cocktails, error } = await supabase
+        const { data: cocktails, error: supabaseError } = await supabase
           .from('cocktails')
           .select('*')
           .order('name', { ascending: true })
 
-        if (error) {
-          return res.status(400).json({ error: error.message })
+        if (supabaseError) {
+          return res.status(400).json({ error: supabaseError.message })
         }
 
         return res.status(200).json(cocktails)
-      } catch (error) {
-        return res.status(500).json({ error: 'Failed to fetch cocktails' })
+      } catch (error: unknown) {
+        return res.status(500).json({ error: (error as Error).message || 'Failed to fetch cocktails' })
       }
 
     case 'POST':
@@ -32,7 +32,7 @@ export default async function handler(
           return res.status(400).json({ error: 'Name and ingredients are required' })
         }
 
-        const { data: cocktail, error } = await supabase
+        const { data: cocktail, error: supabaseError } = await supabase
           .from('cocktails')
           .insert([
             {
@@ -48,13 +48,13 @@ export default async function handler(
           .select()
           .single()
 
-        if (error) {
-          return res.status(400).json({ error: error.message })
+        if (supabaseError) {
+          return res.status(400).json({ error: supabaseError.message })
         }
 
         return res.status(201).json(cocktail)
-      } catch (error) {
-        return res.status(500).json({ error: 'Failed to create cocktail' })
+      } catch (error: unknown) {
+        return res.status(500).json({ error: (error as Error).message || 'Failed to create cocktail' })
       }
 
     case 'PUT':
@@ -65,20 +65,20 @@ export default async function handler(
           return res.status(400).json({ error: 'Cocktail ID is required' })
         }
 
-        const { data: cocktail, error } = await supabase
+        const { data: cocktail, error: supabaseError } = await supabase
           .from('cocktails')
           .update(updateData)
           .eq('id', id)
           .select()
           .single()
 
-        if (error) {
-          return res.status(400).json({ error: error.message })
+        if (supabaseError) {
+          return res.status(400).json({ error: supabaseError.message })
         }
 
         return res.status(200).json(cocktail)
-      } catch (error) {
-        return res.status(500).json({ error: 'Failed to update cocktail' })
+      } catch (error: unknown) {
+        return res.status(500).json({ error: (error as Error).message || 'Failed to update cocktail' })
       }
 
     case 'DELETE':
@@ -89,18 +89,18 @@ export default async function handler(
           return res.status(400).json({ error: 'Cocktail ID is required' })
         }
 
-        const { error } = await supabase
+        const { error: supabaseError } = await supabase
           .from('cocktails')
           .delete()
           .eq('id', id)
 
-        if (error) {
-          return res.status(400).json({ error: error.message })
+        if (supabaseError) {
+          return res.status(400).json({ error: supabaseError.message })
         }
 
         return res.status(200).json({ message: 'Cocktail deleted successfully' })
-      } catch (error) {
-        return res.status(500).json({ error: 'Failed to delete cocktail' })
+      } catch (error: unknown) {
+        return res.status(500).json({ error: (error as Error).message || 'Failed to delete cocktail' })
       }
 
     default:

@@ -44,9 +44,9 @@ export default async function handler(
       if ('sha' in currentFile) {
         currentFileSha = currentFile.sha
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // File doesn't exist yet, which is fine for new files
-      if (error.status !== 404) {
+      if ((error as { status?: number }).status !== 404) {
         throw error
       }
     }
@@ -57,7 +57,7 @@ export default async function handler(
       repo: REPO_NAME,
       path: filePath,
       message: commitMessage,
-      content: Buffer.from(content).toString('base64'),
+      content: Buffer.from(content).toString("base64"),
       branch: branch,
       ...(currentFileSha && { sha: currentFileSha }),
     })
@@ -75,12 +75,12 @@ export default async function handler(
       },
     })
 
-  } catch (error: any) {
-    console.error('GitHub commit error:', error)
+  } catch (error: unknown) {
+    console.error("GitHub commit error:", error)
     
     return res.status(500).json({
-      error: 'Failed to commit to GitHub',
-      details: error.message,
+      error: "Failed to commit to GitHub",
+      details: (error as Error).message,
     })
   }
 }
