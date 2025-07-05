@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { Octokit } from '@octokit/rest'
 
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
+  auth: process.env.GH_PAT,
 })
 
 const REPO_OWNER = process.env.GITHUB_REPO_OWNER || 'BlackVaultEnterprises'
