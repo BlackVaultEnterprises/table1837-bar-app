@@ -47,13 +47,6 @@ Return only the JSON object, no other text.`
     })
 
     const data = await response.json()
-    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
-    
-    // Clean up the response    const data = await response.json()
-    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
-    // Clean up the response to extract JSON
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-    const jsonString    const data = await response.json()
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
     
     // Clean up the response to extract JSON
@@ -244,18 +237,4 @@ export default async function handler(
       details: (error as Error).message,
     })
   }
-} (error as Error).message,
-    })
-  }
-}    result: result
-    })
-
-  } catch (error: unknown) {
-    console.error('NLP command processing error:', error)
-    return res.status(500).json({
-      error: 'Failed to process command',
-      details: (error as Error).message,
-    })
-  }
 }
-
